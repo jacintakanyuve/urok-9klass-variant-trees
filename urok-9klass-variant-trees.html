@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Информатика 9 класс: Дерево. Перебор вариантов с помощью дерева</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --accent: #0d9488;
+      --accent-light: #ccfbf1;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --radius: 16px;
+      --shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 56px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+
+    .topbar-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .topbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .timer-box {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.35s ease;
+    }
+
+    .nav-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-top: 10px;
+      scrollbar-width: none;
+    }
+
+    .nav-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .nav-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .nav-pill.done {
+      border-color: var(--success);
+      color: var(--success);
+      background: var(--success-light);
+    }
+
+    .nav-pill.active.done {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto 0;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(203, 213, 225, 0.75);
+    }
+
+    .module {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .module.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 1.52rem;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.28rem;
+      margin-bottom: 12px;
+      color: var(--primary-dark);
+    }
+
+    h3 {
+      font-size: 1.06rem;
+      margin: 16px 0 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      margin: 8px 0 14px 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .time-tag {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .callout {
+      background: var(--surface-soft);
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 0 12px 12px 0;
+      margin: 14px 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warning);
+      background: var(--warning-light);
+    }
+
+    .callout.success {
+      border-left-color: var(--success);
+      background: var(--success-light);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .info-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .info-box strong {
+      display: block;
+      font-size: 1.02rem;
+      margin-bottom: 6px;
+      color: var(--primary-dark);
+    }
+
+    .formula-box {
+      background: #0f172a;
+      color: #38bdf8;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-size: 0.96rem;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .interactive-zone {
+      background: #f8fafc;
+      border: 2px dashed #93c5fd;
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .interactive-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 0.86rem;
+      border-radius: 8px;
+    }
+
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      margin: 8px 0 12px;
+    }
+
+    .sort-item, .calc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .sort-item-text {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .sort-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .choice-btn {
+      background: var(--surface-soft);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .choice-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .choice-btn.selected {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .choice-btn.correct {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+
+    .choice-btn.wrong {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+
+    /* SVG сцены */
+    .svg-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .svg-box svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .svg-clickable {
+      cursor: pointer;
+    }
+
+    .calc-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .calc-input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      width: 155px;
+    }
+
+    .hint-box {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--warning-light);
+      border-left: 3px solid var(--warning);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+    }
+
+    /* Тест */
+    .quiz-q {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .quiz-opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.93rem;
+      transition: all 0.15s;
+    }
+
+    .quiz-opt:hover {
+      border-color: var(--primary);
+    }
+
+    .quiz-opt.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+    }
+
+    .quiz-opt.correct {
+      border-color: var(--success);
+      background: var(--success-light);
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    .quiz-opt.wrong {
+      border-color: var(--danger);
+      background: var(--danger-light);
+      color: #991b1b;
+    }
+
+    /* Карточка результата */
+    .cert-box {
+      border: 3px solid var(--primary);
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .cert-date-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin: 6px 0 4px;
+    }
+
+    .cert-grade {
+      display: inline-block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--success);
+      background: var(--success-light);
+      padding: 8px 22px;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 0.93rem;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 16px; }
+      h1 { font-size: 1.32rem; }
+      h2 { font-size: 1.16rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-row">
+        <span class="badge">Информатика • 9 класс</span>
+        <span class="timer-box" id="timerDisplay">Время урока: 00:00 / 45:00</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      <nav class="nav-pills" id="navPills">
+        <button class="nav-pill active" onclick="goToStep(0)">Старт</button>
+        <button class="nav-pill" onclick="goToStep(1)">1. Понятие дерева</button>
+        <button class="nav-pill" onclick="goToStep(2)">2. Дерево вариантов</button>
+        <button class="nav-pill" onclick="goToStep(3)">3. Маршруты и задачи</button>
+        <button class="nav-pill" onclick="goToStep(4)">4. Итоговый контроль</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ШАГ 0: ВВЕДЕНИЕ -->
+    <section class="module active" id="step-0">
+      <div class="card">
+        <span class="time-tag">Самостоятельный урок • 45 минут</span>
+        <h1>Дерево. Перебор вариантов с помощью дерева</h1>
+        <p>Когда нужно перечислить все возможные комбинации букв, цифр, маршрутов или ходов в игре и ни один вариант не потерять, в информатике используют наглядную иерархическую модель — <strong>дерево</strong>.</p>
+        <p>На этом уроке ты изучишь устройство деревьев, научишься строить <strong>деревья вариантов</strong> с отсечением неподходящих ветвей, разберёшь развёртку дорожных схем в дерево простых путей и выполнишь итоговый тест.</p>
+
+        <div class="callout">
+          <strong>План самостоятельной работы:</strong><br />
+          1. Изучить элементы дерева (корень, ветви, листья, уровни) на интерактивной модели.<br />
+          2. Отработать приём отсечения запрещённых ветвей при переборе кодовых слов.<br />
+          3. Решить 3 практические задачи (дорожные маршруты, комбинации чисел, турнирная сетка) и пройти тест из 8 вопросов.
+        </div>
+
+        <label for="studentNameInput"><strong>Введи фамилию, имя и класс перед началом:</strong></label>
+        <input type="text" id="studentNameInput" class="input-field" placeholder="Например: Морозов Даниил, 9-А" />
+
+        <div class="nav-footer">
+          <span></span>
+          <button class="btn" onclick="startLesson()">Начать урок →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 1: ПОНЯТИЕ ДЕРЕВА И ЕГО ЭЛЕМЕНТЫ -->
+    <section class="module" id="step-1">
+      <div class="card">
+        <span class="time-tag">Модуль 1 • Рекомендуемое время: 10 минут</span>
+        <h2>1. Что такое дерево в информатике и каковы его элементы?</h2>
+        <p><strong>Дерево</strong> — это связный граф без замкнутых циклов, используемый для представления иерархических связей между объектами (файловая система папок, родословное древо, турнирная таблица на выбывание, классификация объектов).</p>
+
+        <div class="formula-box">
+          Главное свойство дерева: &nbsp; Количество рёбер (ветвей) = Количество вершин − 1 &nbsp;(|E| = |V| − 1)
+        </div>
+
+        <div class="grid-3">
+          <div class="info-box">
+            <strong>Корень дерева (уровень 0)</strong>
+            Главная исходная вершина на самом верхнем уровне, из которой начинается построение всех ветвей.
+          </div>
+          <div class="info-box">
+            <strong>Внутренний узел</strong>
+            Промежуточная вершина, у которой есть и родитель (сверху), и хотя бы один потомок (снизу).
+          </div>
+          <div class="info-box">
+            <strong>Лист (конечная вершина)</strong>
+            Вершина на конце ветви, из которой <em>не выходит ни одного ребра вниз</em>. В дереве вариантов каждый лист соответствует одному готовому варианту!
+          </div>
+        </div>
+
+        <p><strong>Уровень (глубина) вершины</strong> показывает, сколько шагов (рёбер) нужно пройти от корня до этой вершины. <strong>Высота дерева</strong> равна наибольшему номеру уровня среди его листьев.</p>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Интерактивный инспектор дерева</div>
+          <p style="font-size: 0.92rem;"><strong>Нажимай на любые вершины</strong> дерева ниже, чтобы увидеть их роль (корень, внутренний узел или лист), уровень, родителя и потомков:</p>
+
+          <div class="svg-box" id="treeInspectorSvg"></div>
+          <div class="info-box" id="treeInspectorInfo"></div>
+
+          <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border);" />
+
+          <div class="interactive-title">Мини-проверка по схеме выше</div>
+          <div id="m1Container"></div>
+          <button class="btn btn-sm" onclick="checkM1()">Проверить ответы</button>
+          <div class="feedback" id="m1Feedback"></div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(0)">← Назад</button>
+          <button class="btn" onclick="goToStep(2)">Дальше: Перебор вариантов →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 2: ПЕРЕБОР ВАРИАНТОВ С ПОМОЩЬЮ ДЕРЕВА -->
+    <section class="module" id="step-2">
+      <div class="card">
+        <span class="time-tag">Модуль 2 • Рекомендуемое время: 13 минут</span>
+        <h2>2. Построение дерева вариантов и отсечение ветвей</h2>
+        <p>Чтобы методом перебора найти все возможные комбинации длины <i>L</i>, дерево строят по уровням:</p>
+        <ol>
+          <li>На <strong>уровне 0</strong> ставят корень (начало выбора).</li>
+          <li>На <strong>уровне 1</strong> из корня проводят ветви ко всем допустимым первым элементам.</li>
+          <li>На каждом следующем уровне из каждой подходящей вершины проводят ветви ко всем допустимым следующим элементам.</li>
+          <li>Количество листьев на нижнем уровне даёт <strong>общее число вариантов</strong>, а путь от корня к каждому листу — саму комбинацию.</li>
+        </ol>
+
+        <div class="callout">
+          <strong>Правило умножения:</strong> Если на 1-м шаге есть $k_1$ вариантов, на 2-м шаге (независимо от первого) — $k_2$ вариантов, ..., на $m$-м шаге — $k_m$ вариантов, то общее число листьев в полном дереве равно произведению: <strong>N = k₁ · k₂ · ... · kₘ</strong>.
+        </div>
+
+        <div class="callout warn">
+          <strong>Приём отсечения ветвей (ограничения):</strong> Если по условию задачи некоторые сочетания запрещены (например, буквы не должны повторяться или две одинаковые буквы не могут стоять рядом), такую ветвь <strong>обрывают сразу</strong> при её появлении и дальше не продолжают.
+        </div>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Тренажёр: Отсечение запрещённых ветвей в дереве вариантов</div>
+          <p style="font-size: 0.92rem;"><strong>Задача:</strong> Составляются все трёхбуквенные кодовые слова из букв <strong>А</strong> и <strong>Б</strong>, в которых <strong>две буквы Б не стоят рядом</strong> (запрещено сочетание <code>ББ</code>).<br />
+          На полном дереве ниже показаны все $2^3 = 8$ возможных слов. <strong>Нажми на запрещённые листья</strong> (содержащие <code>ББ</code>), чтобы отсечь их от дерева вариантов:</p>
+
+          <div class="svg-box" id="pruningTreeSvg"></div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-sm" onclick="checkPrunedTree()">Проверить отсечение ветвей</button>
+            <button class="btn btn-sm btn-secondary" onclick="resetPrunedTree()">Сбросить выбор</button>
+          </div>
+          <div class="feedback" id="m2Feedback"></div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Назад</button>
+          <button class="btn" onclick="goToStep(3)">Дальше: Маршруты и задачи →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 3: РАЗВЁРТКА ГРАФА В ДЕРЕВО И ПРАКТИЧЕСКИЕ ЗАДАЧИ -->
+    <section class="module" id="step-3">
+      <div class="card">
+        <span class="time-tag">Модуль 3 • Рекомендуемое время: 14 минут</span>
+        <h2>3. Поиск маршрутов по схеме дорог и решение задач деревом</h2>
+        <p>Если дана схема дорог между населёнными пунктами и требуется найти количество маршрутов <strong>без повторного посещения одного и того же пункта</strong>, схему удобно развернуть в дерево простых путей:</p>
+        <ul>
+          <li>Корнем дерева назначается пункт отправления.</li>
+          <li>Из каждой вершины дерева строятся ветви во все соседние пункты, <em>кроме тех, которые уже встречались на пути от корня</em> (иначе возникнет цикл).</li>
+          <li>Ветвь завершается листом, как только достигнут пункт назначения (успешный маршрут) либо зашла в тупик.</li>
+        </ul>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Практикум: Реши 3 задачи с помощью дерева вариантов</div>
+          <p style="font-size: 0.92rem;">Впиши в поля <strong>только целые числа</strong>. При затруднении используй подсказку с разбором ветвей:</p>
+
+          <div class="calc-card">
+            <div><strong>Задача 1 (Перебор маршрутов).</strong> На схеме изображены дороги между пунктами <strong>А, Б, В, Г, Д</strong> (движение по каждой дороге возможно в обе стороны). Сколько существует различных путей из пункта <strong>А</strong> в пункт <strong>Д</strong>, не проходящих ни через один пункт дважды?</div>
+            <div class="svg-box" id="roadGraphSvg" style="margin: 10px 0;"></div>
+            <div class="calc-row">
+              <input type="number" id="t3-1" class="calc-input" placeholder="Ответ числом" />
+              <span>маршрутов</span>
+              <button class="btn btn-sm btn-secondary" onclick="toggleHint('h3-1')">Подсказка (дерево путей)</button>
+            </div>
+            <div class="hint-box" id="h3-1">
+              <strong>Ветви из А через Б (4 пути):</strong><br />
+              1) А → Б → В → Д<br />
+              2) А → Б → В → Г → Д<br />
+              3) А → Б → Г → Д<br />
+              4) А → Б → Г → В → Д<br />
+              <strong>Ветви из А через В (3 пути):</strong><br />
+              5) А → В → Д<br />
+              6) А → В → Г → Д<br />
+              7) А → В → Б → Г → Д (ветвь А → В → Г → Б ведёт в тупик, так как А, В и Г уже посещены).
+            </div>
+          </div>
+
+          <div class="calc-card">
+            <div><strong>Задача 2 (Комбинации цифр с ограничением).</strong> Сколько трёхзначных чисел можно составить из цифр <strong>1, 2, 3</strong> при условии, что цифры в записи числа <strong>не повторяются</strong>, а само число <strong>больше 200</strong>?</div>
+            <div class="calc-row">
+              <input type="number" id="t3-2" class="calc-input" placeholder="Ответ числом" />
+              <span>чисел</span>
+              <button class="btn btn-sm btn-secondary" onclick="toggleHint('h3-2')">Подсказка</button>
+            </div>
+            <div class="hint-box" id="h3-2">На 1-м месте (сотни) может стоять только цифра 2 или 3 (ветвь с цифрой 1 отсекается, так как число меньше 200). Из 2 идут ветви к 1 и 3 (числа 213 и 231), из 3 — к 1 и 2 (числа 312 и 321).</div>
+          </div>
+
+          <div class="calc-card">
+            <div><strong>Задача 3 (Турнирное дерево).</strong> В шахматном турнире по олимпийской системе (проигравший сразу выбывает из турнира) участвуют <strong>16 школьников</strong>. Сколько всего партий будет сыграно в этом турнире, чтобы определить единственного чемпиона?</div>
+            <div class="calc-row">
+              <input type="number" id="t3-3" class="calc-input" placeholder="Ответ числом" />
+              <span>партий</span>
+              <button class="btn btn-sm btn-secondary" onclick="toggleHint('h3-3')">Подсказка</button>
+            </div>
+            <div class="hint-box" id="h3-3">В бинарном турнирном дереве 16 участников — это 16 листьев, а каждая сыгранная партия — внутренний узел (1/8 финала: 8 партий + 1/4 финала: 4 партии + полуфинал: 2 партии + финал: 1 партия).</div>
+          </div>
+
+          <button class="btn btn-sm" onclick="checkM3Tasks()">Проверить решения</button>
+          <div class="feedback" id="m3Feedback"></div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Назад</button>
+          <button class="btn" onclick="goToStep(4)">Перейти к итоговому контролю →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 4: ИТОГОВЫЙ КОНТРОЛЬ -->
+    <section class="module" id="step-4">
+      <div class="card">
+        <span class="time-tag">Модуль 4 • Рекомендуемое время: 8 минут</span>
+        <h2>4. Итоговый контроль знаний</h2>
+        <p>Ответь на 8 вопросов по всем разделам урока. После проверки сформируется именная карточка с оценкой и датой проведения урока.</p>
+
+        <div id="finalQuizContainer"></div>
+
+        <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="finishLesson()">Завершить урок и получить оценку</button>
+
+        <div id="certificateSection" style="display: none;">
+          <div class="cert-box">
+            <div style="font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">
+              Карточка прохождения урока • Информатика 9 класс
+            </div>
+            <div class="cert-date-badge">Дата урока: 24 ноября 2026 г.</div>
+            <h2 id="certStudentName" style="margin: 8px 0; color: var(--text);">Ученик 9 класса</h2>
+            <p style="margin-bottom: 4px;">Тема: «Дерево. Перебор вариантов с помощью дерева»</p>
+            <div class="cert-grade" id="certGradeText">Оценка: 5 (Отлично)</div>
+            <p id="certStats" style="font-weight: 600;"></p>
+            <p id="certCode" style="font-family: monospace; font-size: 0.9rem; color: var(--text-muted);"></p>
+            <div class="callout success" style="text-align: left; margin-top: 12px;">
+              Сделай скриншот этой карточки и отправь учителю для выставления оценки в журнал!
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(3)">← Вернуться к теории</button>
+          <button class="btn btn-secondary btn-sm" onclick="resetAll()">Пройти заново</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- СОСТОЯНИЕ ---
+    const state = {
+      currentStep: 0,
+      completedSteps: [false, false, false, false, false],
+      secondsElapsed: 0,
+      studentName: "",
+      selectedTreeNode: "A",
+      prunedLeaves: new Set()
+    };
+
+    // --- ТАЙМЕР ---
+    setInterval(() => {
+      state.secondsElapsed++;
+      const m = String(Math.floor(state.secondsElapsed / 60)).padStart(2, "0");
+      const s = String(state.secondsElapsed % 60).padStart(2, "0");
+      document.getElementById("timerDisplay").textContent = `Время урока: ${m}:${s} / 45:00`;
+    }, 1000);
+
+    // --- НАВИГАЦИЯ ---
+    function goToStep(idx) {
+      document.querySelectorAll(".module").forEach((el, i) => el.classList.toggle("active", idx === i));
+      document.querySelectorAll(".nav-pill").forEach((pill, i) => {
+        pill.classList.toggle("active", idx === i);
+        pill.classList.toggle("done", state.completedSteps[i]);
+      });
+      state.currentStep = idx;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function markStepDone(idx) {
+      state.completedSteps[idx] = true;
+      const pills = document.querySelectorAll(".nav-pill");
+      if (pills[idx]) pills[idx].classList.add("done");
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const done = state.completedSteps.filter(Boolean).length;
+      const pct = Math.min(100, Math.round((done / 4) * 100));
+      document.getElementById("progressBar").style.width = `${pct}%`;
+    }
+
+    function startLesson() {
+      const val = document.getElementById("studentNameInput").value.trim();
+      state.studentName = val || "Ученик 9 класса";
+      markStepDone(0);
+      goToStep(1);
+    }
+
+    // --- МОДУЛЬ 1: ИНСПЕКТОР ДЕРЕВА ---
+    const treeNodes = {
+      A: { x: 310, y: 34, parent: null, children: ["B", "C", "D"], level: 0 },
+      B: { x: 130, y: 98, parent: "A", children: ["E", "F"], level: 1 },
+      C: { x: 310, y: 98, parent: "A", children: ["G"], level: 1 },
+      D: { x: 490, y: 98, parent: "A", children: ["H", "I"], level: 1 },
+      E: { x: 75, y: 162, parent: "B", children: [], level: 2 },
+      F: { x: 185, y: 162, parent: "B", children: ["J"], level: 2 },
+      G: { x: 310, y: 162, parent: "C", children: [], level: 2 },
+      H: { x: 435, y: 162, parent: "D", children: [], level: 2 },
+      I: { x: 545, y: 162, parent: "D", children: [], level: 2 },
+      J: { x: 185, y: 222, parent: "F", children: [], level: 3 }
+    };
+
+    function selectInspectorNode(id) {
+      state.selectedTreeNode = id;
+      renderTreeInspector();
+    }
+
+    function renderTreeInspector() {
+      const sel = state.selectedTreeNode;
+      const info = treeNodes[sel];
+
+      let svg = `<svg viewBox="0 0 620 250" style="max-width:620px;">`;
+
+      [34, 98, 162, 222].forEach((y, lvl) => {
+        svg += `<line x1="20" y1="${y}" x2="600" y2="${y}" stroke="#f1f5f9" stroke-width="1.5" />`;
+        svg += `<text x="26" y="${y + 4}" font-size="11" font-weight="bold" fill="#94a3b8">Ур. ${lvl}</text>`;
+      });
+
+      Object.entries(treeNodes).forEach(([id, node]) => {
+        node.children.forEach(chId => {
+          const ch = treeNodes[chId];
+          const isRel = (id === sel || chId === sel);
+          const stroke = isRel ? "#2563eb" : "#94a3b8";
+          const width = isRel ? 3.2 : 2;
+          svg += `<line x1="${node.x}" y1="${node.y}" x2="${ch.x}" y2="${ch.y}" stroke="${stroke}" stroke-width="${width}" />`;
+        });
+      });
+
+      Object.entries(treeNodes).forEach(([id, node]) => {
+        let fill = "#ffffff", stroke = "#2563eb", textCol = "#0f172a";
+        if (id === sel) {
+          fill = "#2563eb"; stroke = "#1d4ed8"; textCol = "#ffffff";
+        } else if (id === info.parent) {
+          fill = "#fef3c7"; stroke = "#d97706"; textCol = "#92400e";
+        } else if (info.children.includes(id)) {
+          fill = "#d1fae5"; stroke = "#059669"; textCol = "#065f46";
+        }
+
+        svg += `
+          <g class="svg-clickable" onclick="selectInspectorNode('${id}')">
+            <circle cx="${node.x}" cy="${node.y}" r="18" fill="${fill}" stroke="${stroke}" stroke-width="2.8" />
+            <text x="${node.x}" y="${node.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="${textCol}">${id}</text>
+          </g>
+        `;
+      });
+
+      svg += `</svg>`;
+      document.getElementById("treeInspectorSvg").innerHTML = svg;
+
+      let role = "Внутренний узел";
+      if (!info.parent) role = "Корень дерева (уровень 0)";
+      else if (info.children.length === 0) role = "Лист (конечная вершина)";
+
+      document.getElementById("treeInspectorInfo").innerHTML = `
+        <strong>Выбрана вершина ${sel} — ${role}</strong>
+        Уровень (глубина): <strong>${info.level}</strong> &nbsp;|&nbsp;
+        Родитель (предок): <strong>${info.parent || "отсутствует (это корень)"}</strong> &nbsp;|&nbsp;
+        Потомки: <strong>${info.children.length ? info.children.join(", ") : "нет (это лист)"}</strong>
+      `;
+    }
+    renderTreeInspector();
+
+    const m1Data = [
+      {
+        text: "Сколько листьев (конечных вершин, из которых не выходят ветви вниз) в этом дереве?",
+        options: ["4 листа", "5 листьев (E, J, G, H, I)", "10 листьев"],
+        answer: "5 листьев (E, J, G, H, I)"
+      },
+      {
+        text: "Сколько всего рёбер (ветвей) в данном дереве из 10 вершин?",
+        options: ["9 рёбер", "10 рёбер", "11 рёбер"],
+        answer: "9 рёбер"
+      },
+      {
+        text: "Чему равна высота данного дерева (глубина самого нижнего листа J)?",
+        options: ["2", "3", "4"],
+        answer: "3"
+      }
+    ];
+    const m1User = {};
+
+    function renderM1() {
+      const box = document.getElementById("m1Container");
+      box.innerHTML = "";
+      m1Data.forEach((item, idx) => {
+        const div = document.createElement("div");
+        div.className = "sort-item";
+        div.innerHTML = `
+          <div class="sort-item-text"><strong>${idx + 1}.</strong> ${item.text}</div>
+          <div class="sort-buttons" id="m1-btns-${idx}">
+            ${item.options.map(o => `<button class="choice-btn" onclick="selM1(${idx}, '${o}', this)">${o}</button>`).join("")}
+          </div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function selM1(idx, opt, btn) {
+      m1User[idx] = opt;
+      document.getElementById(`m1-btns-${idx}`).querySelectorAll(".choice-btn").forEach(b => b.classList.remove("selected", "correct", "wrong"));
+      btn.classList.add("selected");
+    }
+
+    function checkM1() {
+      let ok = 0;
+      m1Data.forEach((item, idx) => {
+        const chosen = m1User[idx];
+        document.getElementById(`m1-btns-${idx}`).querySelectorAll(".choice-btn").forEach(b => {
+          b.classList.remove("selected", "correct", "wrong");
+          if (b.textContent === chosen) {
+            if (chosen === item.answer) { b.classList.add("correct"); ok++; }
+            else { b.classList.add("wrong"); }
+          }
+        });
+      });
+      const fb = document.getElementById("m1Feedback");
+      if (ok === m1Data.length) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Верно! Элементы и свойства дерева определены безошибочно.";
+        markStepDone(1);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Правильно: ${ok} из ${m1Data.length}. Проверь выделенные красным пункты.`;
+      }
+    }
+    renderM1();
+
+    // --- МОДУЛЬ 2: ДЕРЕВО ВАРИАНТОВ И ОТСЕЧЕНИЕ ВЕТВЕЙ ---
+    const all3LetterWords = ["ААА", "ААБ", "АБА", "АББ", "БАА", "БАБ", "ББА", "БББ"];
+    const invalidWords = ["АББ", "ББА", "БББ"];
+
+    function togglePruneLeaf(word) {
+      if (state.prunedLeaves.has(word)) state.prunedLeaves.delete(word);
+      else state.prunedLeaves.add(word);
+      renderPruningTree();
+    }
+
+    function resetPrunedTree() {
+      state.prunedLeaves.clear();
+      document.getElementById("m2Feedback").textContent = "";
+      renderPruningTree();
+    }
+
+    function renderPruningTree() {
+      const W = 680, H = 250;
+      const root = { x: 340, y: 24, label: "Старт" };
+      const lvl1 = [
+        { x: 180, y: 82, label: "А" },
+        { x: 500, y: 82, label: "Б" }
+      ];
+      const lvl2 = [
+        { x: 100, y: 144, label: "АА", p: 0 },
+        { x: 260, y: 144, label: "АБ", p: 0 },
+        { x: 420, y: 144, label: "БА", p: 1 },
+        { x: 580, y: 144, label: "ББ", p: 1 }
+      ];
+      const leafX = [55, 145, 220, 300, 380, 460, 540, 625];
+
+      let svg = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px;">`;
+
+      // Ветви корень -> уровень 1
+      lvl1.forEach(n1 => {
+        svg += `<line x1="${root.x}" y1="${root.y}" x2="${n1.x}" y2="${n1.y}" stroke="#64748b" stroke-width="2" />`;
+      });
+
+      // Ветви уровень 1 -> уровень 2
+      lvl2.forEach(n2 => {
+        const parent = lvl1[n2.p];
+        const isBB = n2.label === "ББ" && state.prunedLeaves.has("ББА") && state.prunedLeaves.has("БББ");
+        svg += `<line x1="${parent.x}" y1="${parent.y}" x2="${n2.x}" y2="${n2.y}" stroke="${isBB ? '#fca5a5' : '#64748b'}" stroke-width="2" ${isBB ? 'stroke-dasharray="4,3"' : ''} />`;
+      });
+
+      // Ветви уровень 2 -> листья
+      all3LetterWords.forEach((word, idx) => {
+        const pIdx = Math.floor(idx / 2);
+        const parent = lvl2[pIdx];
+        const lx = leafX[idx];
+        const ly = 212;
+        const isPruned = state.prunedLeaves.has(word);
+
+        svg += `<line x1="${parent.x}" y1="${parent.y}" x2="${lx}" y2="${ly}" stroke="${isPruned ? '#fca5a5' : '#2563eb'}" stroke-width="2" ${isPruned ? 'stroke-dasharray="4,3"' : ''} />`;
+      });
+
+      // Отрисовка корня и промежуточных узлов
+      svg += `
+        <rect x="${root.x - 32}" y="${root.y - 13}" width="64" height="26" rx="13" fill="#0f172a" />
+        <text x="${root.x}" y="${root.y + 4}" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">${root.label}</text>
+      `;
+
+      lvl1.forEach(n => {
+        svg += `
+          <circle cx="${n.x}" cy="${n.y}" r="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+          <text x="${n.x}" y="${n.y + 5}" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">${n.label}</text>
+        `;
+      });
+
+      lvl2.forEach(n => {
+        svg += `
+          <rect x="${n.x - 20}" y="${n.y - 14}" width="40" height="28" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.8" />
+          <text x="${n.x}" y="${n.y + 5}" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">${n.label}</text>
+        `;
+      });
+
+      // Кликабельные листья (8 вариантов)
+      all3LetterWords.forEach((word, idx) => {
+        const lx = leafX[idx];
+        const ly = 212;
+        const isPruned = state.prunedLeaves.has(word);
+        const fill = isPruned ? "#fee2e2" : "#ecfdf5";
+        const stroke = isPruned ? "#dc2626" : "#059669";
+        const textCol = isPruned ? "#991b1b" : "#065f46";
+
+        svg += `
+          <g class="svg-clickable" onclick="togglePruneLeaf('${word}')">
+            <rect x="${lx - 26}" y="${ly - 16}" width="52" height="32" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2.2" />
+            <text x="${lx}" y="${ly + 4}" font-size="12" font-weight="bold" text-anchor="middle" fill="${textCol}">${word}</text>
+            ${isPruned ? `<line x1="${lx - 22}" y1="${ly - 12}" x2="${lx + 22}" y2="${ly + 12}" stroke="#dc2626" stroke-width="2.2" />` : ""}
+          </g>
+        `;
+      });
+
+      svg += `</svg>`;
+      document.getElementById("pruningTreeSvg").innerHTML = svg;
+    }
+    renderPruningTree();
+
+    function checkPrunedTree() {
+      const fb = document.getElementById("m2Feedback");
+      const exact = invalidWords.every(w => state.prunedLeaves.has(w)) && state.prunedLeaves.size === invalidWords.length;
+
+      if (exact) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Верно! Отсечены 3 запрещённых слова (АББ, ББА, БББ), осталось ровно 5 допустимых вариантов: ААА, ААБ, АБА, БАА, БАБ.";
+        markStepDone(2);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Отсечено ветвей: ${state.prunedLeaves.size}. Нажми только на те слова, в которых две буквы «Б» стоят подряд (содержат «ББ»).`;
+      }
+    }
+
+    // --- МОДУЛЬ 3: СХЕМА ДОРОГ И ПРАКТИЧЕСКИЕ ЗАДАЧИ ---
+    function renderRoadGraphSvg() {
+      const nodes = {
+        "А": { x: 55, y: 115 },
+        "Б": { x: 205, y: 45 },
+        "В": { x: 205, y: 185 },
+        "Г": { x: 375, y: 45 },
+        "Д": { x: 515, y: 115 }
+      };
+      const edges = [
+        ["А", "Б"], ["А", "В"], ["Б", "В"], ["Б", "Г"], ["В", "Г"], ["В", "Д"], ["Г", "Д"]
+      ];
+
+      let svg = `<svg viewBox="0 0 570 230" style="max-width:570px;">`;
+      edges.forEach(([u, v]) => {
+        svg += `<line x1="${nodes[u].x}" y1="${nodes[u].y}" x2="${nodes[v].x}" y2="${nodes[v].y}" stroke="#2563eb" stroke-width="2.5" />`;
+      });
+      Object.entries(nodes).forEach(([id, pt]) => {
+        const isEnd = (id === "А" || id === "Д");
+        svg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="19" fill="${isEnd ? '#2563eb' : '#ffffff'}" stroke="#2563eb" stroke-width="2.8" />
+          <text x="${pt.x}" y="${pt.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="${isEnd ? '#ffffff' : '#0f172a'}">${id}</text>
+        `;
+      });
+      svg += `</svg>`;
+      document.getElementById("roadGraphSvg").innerHTML = svg;
+    }
+    renderRoadGraphSvg();
+
+    function toggleHint(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === "block" ? "none" : "block";
+    }
+
+    function checkM3Tasks() {
+      const a1 = Number(document.getElementById("t3-1").value.trim());
+      const a2 = Number(document.getElementById("t3-2").value.trim());
+      const a3 = Number(document.getElementById("t3-3").value.trim());
+
+      let ok = 0;
+      if (a1 === 7) ok++;
+      if (a2 === 4) ok++;
+      if (a3 === 15) ok++;
+
+      const fb = document.getElementById("m3Feedback");
+      if (ok === 3) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Превосходно! 1) 7 маршрутов; 2) 4 числа; 3) 15 партий.";
+        markStepDone(3);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Решено верно: ${ok} из 3. Открой подсказки к нерешённым задачам и проверь ветви перебора.`;
+      }
+    }
+
+    // --- МОДУЛЬ 4: ИТОГОВЫЙ ТЕСТ ---
+    const quizData = [
+      {
+        q: "1. Сколько рёбер (ветвей) содержит дерево, состоящее из 15 вершин?",
+        options: ["14 рёбер", "15 рёбер", "16 рёбер"],
+        correct: 0
+      },
+      {
+        q: "2. Какую вершину в дереве вариантов называют листом?",
+        options: [
+          "Самую верхнюю вершину, из которой начинается построение дерева",
+          "Конечную вершину на конце ветви, из которой не выходит ни одного ребра вниз",
+          "Любую вершину на первом уровне"
+        ],
+        correct: 1
+      },
+      {
+        q: "3. Сколько различных трёхбуквенных слов можно составить из алфавита {А, Б, В}, если буквы в слове могут повторяться?",
+        options: ["9 слов", "18 слов", "27 слов"],
+        correct: 2
+      },
+      {
+        q: "4. Сколько различных трёхбуквенных кодов можно составить из букв К, О, Т так, чтобы код начинался с гласной буквы (О), а буквы в коде не повторялись?",
+        options: ["2 кода", "4 кода", "6 кодов"],
+        correct: 0
+      },
+      {
+        q: "5. Зачем при решении задач с ограничениями применяют приём отсечения ветвей?",
+        options: [
+          "Чтобы сразу прекратить построение ветвей, нарушающих условие задачи, и сократить перебор",
+          "Чтобы увеличить высоту дерева",
+          "Чтобы превратить дерево в замкнутый цикл"
+        ],
+        correct: 0
+      },
+      {
+        q: "6. Сколько листьев будет на 3-м уровне полного двоичного дерева (корень на уровне 0, из каждой внутренней вершины выходят ровно 2 ветви)?",
+        options: ["6 листьев", "8 листьев", "16 листьев"],
+        correct: 1
+      },
+      {
+        q: "7. Какой из перечисленных объектов реального мира имеет древовидную иерархическую структуру?",
+        options: [
+          "Иерархия папок и вложенных файлов на диске компьютера",
+          "Кольцевая линия метрополитена",
+          "Сетка футбольных ворот"
+        ],
+        correct: 0
+      },
+      {
+        q: "8. Сколько двузначных чисел можно составить из цифр 0, 1, 2 (цифры в записи числа могут повторяться, но число не может начинаться с нуля)?",
+        options: ["4 числа", "6 чисел", "9 чисел"],
+        correct: 1
+      }
+    ];
+    const quizAnswers = {};
+
+    function renderQuiz() {
+      const box = document.getElementById("finalQuizContainer");
+      box.innerHTML = "";
+      quizData.forEach((item, qIdx) => {
+        const div = document.createElement("div");
+        div.className = "quiz-q";
+        div.innerHTML = `
+          <div><strong>${item.q}</strong></div>
+          <div id="quiz-opts-${qIdx}">
+            ${item.options.map((opt, oIdx) => `
+              <button class="quiz-opt" onclick="selectQuiz(${qIdx}, ${oIdx}, this)">${opt}</button>
+            `).join("")}
+          </div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function selectQuiz(qIdx, oIdx, btn) {
+      quizAnswers[qIdx] = oIdx;
+      const box = document.getElementById(`quiz-opts-${qIdx}`);
+      box.querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected", "correct", "wrong"));
+      btn.classList.add("selected");
+    }
+
+    function finishLesson() {
+      if (Object.keys(quizAnswers).length < quizData.length) {
+        alert("Ответь на все 8 вопросов теста перед завершением урока!");
+        return;
+      }
+
+      let score = 0;
+      quizData.forEach((item, qIdx) => {
+        const chosen = quizAnswers[qIdx];
+        const box = document.getElementById(`quiz-opts-${qIdx}`);
+        box.querySelectorAll(".quiz-opt").forEach((b, oIdx) => {
+          b.classList.remove("selected", "correct", "wrong");
+          if (oIdx === item.correct) b.classList.add("correct");
+          else if (oIdx === chosen && chosen !== item.correct) b.classList.add("wrong");
+        });
+        if (chosen === item.correct) score++;
+      });
+
+      let grade = 2;
+      let label = "Нужно повторить тему";
+      if (score >= 7) { grade = 5; label = "Отлично"; }
+      else if (score >= 5) { grade = 4; label = "Хорошо"; }
+      else if (score >= 4) { grade = 3; label = "Удовлетворительно"; }
+
+      markStepDone(4);
+      const mins = Math.max(1, Math.round(state.secondsElapsed / 60));
+      const code = `INF9-TREE-241126-${score}${grade}`;
+
+      document.getElementById("certStudentName").textContent = state.studentName || "Ученик 9 класса";
+      document.getElementById("certGradeText").textContent = `Оценка: ${grade} (${label})`;
+      document.getElementById("certStats").textContent = `Правильных ответов: ${score} из ${quizData.length} • Время работы: ~${mins} мин.`;
+      document.getElementById("certCode").textContent = `Код проверки: ${code}`;
+      document.getElementById("certificateSection").style.display = "block";
+      document.getElementById("certificateSection").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function resetAll() {
+      if (confirm("Сбросить прогресс и пройти урок заново?")) {
+        location.reload();
+      }
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
